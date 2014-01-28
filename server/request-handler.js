@@ -4,32 +4,55 @@
  * You'll have to figure out a way to export this function from
  * this file and include it in basic-server.js so that it actually works.
  * *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html. */
+var queryString = require( "querystring" );
 
+//need to check the url and install it
+var url = require( "url" );
+
+var msg = [];
 var handleRequest = function(request, response) {
   /* the 'request' argument comes from nodes http module. It includes info about the
   request - such as what URL the browser is requesting. */
 
   /* Documentation for both request and response can be found at
    * http://nodemanual.org/0.8.14/nodejs_ref_guide/http.html */
+   if (request.url === '/1/classes/chatterbox'){
+    if(request.method === 'POST'){
 
+      var body = '';
+      request.on('data', function (data) {
+        body += data;
+      });
+
+      request.on('end', function () {
+        var POST = JSON.parse(body);
+        msg.push(POST);
+      });
+
+    }
+      console.log('We receive a correct url');
+      console.log('Here is the method' + request.method);
+      var statusCode = 200;
+
+      /* Without this line, this server wouldn't work. See the note
+      * below about CORS. */
+      var headers = defaultCorsHeaders;
+
+      headers['Content-Type'] = "text/plain";
+
+      /* .writeHead() tells our server what HTTP status code to send back */
+      response.writeHead(statusCode, headers);
+
+      /* Make sure to always call response.end() - Node will not send
+      * anything back to the client until you do. The string you pass to
+      * response.end() will be the body of the response - i.e. what shows
+      * up in the browser.*/
+      response.end("Hello, World! Hello");
+   }
   console.log("Serving request type " + request.method + " for url " + request.url);
 
-  var statusCode = 200;
 
-  /* Without this line, this server wouldn't work. See the note
-   * below about CORS. */
-  var headers = defaultCorsHeaders;
 
-  headers['Content-Type'] = "text/plain";
-
-  /* .writeHead() tells our server what HTTP status code to send back */
-  response.writeHead(statusCode, headers);
-
-  /* Make sure to always call response.end() - Node will not send
-   * anything back to the client until you do. The string you pass to
-   * response.end() will be the body of the response - i.e. what shows
-   * up in the browser.*/
-  response.end("Hello, World!");
 };
 
 /* These headers will allow Cross-Origin Resource Sharing (CORS).
@@ -40,6 +63,9 @@ var handleRequest = function(request, response) {
 var defaultCorsHeaders = {
   "access-control-allow-origin": "*",
   "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+//  "access-control-allow-headers": "content-type, accept",
   "access-control-allow-headers": "content-type, accept",
   "access-control-max-age": 10 // Seconds.
 };
+
+module.exports= handleRequest;

@@ -1,4 +1,5 @@
 /* Import node's http module: */
+var handleRequest = require('./request-handler.js');
 var http = require("http");
 
 /* Every server needs to listen on a port with a unique number. The
@@ -13,7 +14,7 @@ var port = 8080;
 var ip = "127.0.0.1";
 
 /* We use node's http module to create a server. Note, we called it 'server', but
-we could have called it anything (myServer, blahblah, etc.). The function we pass it (handleRequest)
+  we could have called it anything (myServer, blahblah, etc.). The function we pass it (handleRequest)
 will, unsurprisingly, handle all incoming requests. (ps: 'handleRequest' is in the 'request-handler' file).
 Lastly, we tell the server we made to listen on the given port and IP. */
 var server = http.createServer(handleRequest);
@@ -30,3 +31,4 @@ server.listen(port, ip);
  * server.listen() will continue running as long as there is the
  * possibility of serving more requests. To stop your server, hit
  * Ctrl-C on the command line. */
+
