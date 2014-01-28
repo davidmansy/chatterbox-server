@@ -21,7 +21,7 @@ var displayMessages = function(messages, display, roomname) {
     context = {
       // display_name: display,
       user_name: messages[i].username,
-      time: messages[i].updatedAt,
+      // time: messages[i].updatedAt,
       message: encodeHTML(messages[i].text)
     };
     message_html = template(context);
@@ -90,7 +90,7 @@ $(document).ready(function(){
       contentType: 'application/json',
       success: function (data) {
         console.log('chatterbox: Message sent');
-        
+
       },
       error: function (data) {
         // debugger;
@@ -106,10 +106,12 @@ $(document).ready(function(){
       type: 'GET',
       //to apply restriction on data received (eg. sort, limit), 
       //pls create an object under data.
-      data: {order:'-createdAt'},
+      //data: {order:'-createdAt'},
       contentType: 'application/json',
       success: function (data) {
-        var messages = data.results
+        // var messages = data.results
+        console.log(data);
+        var messages = JSON.parse(data);
         displayMessages(messages, $('#messages'), roomname);
         buildRoomList(messages, roomList, $('#rooms'));
       },
