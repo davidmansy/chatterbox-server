@@ -54,18 +54,29 @@ var initializeMessages = function() {
 };
 
 var writeMessage = function(msg) {
-  var file = __dirname + "/client/messages.json";
+  var filepath = path.join(__dirname + "/client/messages.json");
+  var messagesData;
 
-  var msgStrJson = JSON.stringify(msg);
-
-  fs.appendFile(file, msg, function(err, data) {
-    if(err) {
-      console.log("Error: " + error);
+  fs.readFile(filepath, {encoding: 'utf-8'}, function(error, data) {
+    if(error) {
+      console.log('ERROR READING FILE');
+      messagesData = [];
     } else {
-      console.log("File saved");
+      messagesData = JSON.parse(data);
     }
+    messagesData.push(msg);
+    msgJson = JSON.stringify(messagesData);
+
+    fs.writeFile(filepath, msgJson, {encoding: 'utf-8'}, function(err, data) {
+      if(err) {
+        console.log("Error: " + error);
+      } else {
+        console.log("File saved");
+      }
+    });
 
   });
+
 };
 
 var msg;
@@ -99,9 +110,8 @@ var handleRequest = function(request, response) {
 
       request.on('end', function () {
         var POST = JSON.parse(body);
-        console.log('msg',msg);
         msg.push(POST);
-        writeMessage(msg);
+        writeMessage(POST);
       });
       sendResponse(200, "Hello world!");
     } 
