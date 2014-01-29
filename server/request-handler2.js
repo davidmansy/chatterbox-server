@@ -9,7 +9,6 @@
 //need to check the url and install it
 var url = require( "url" );
 var fs = require("fs");
-var path = require("path");
 
 var defaultCorsHeaders = {
   "access-control-allow-origin": "*",
@@ -38,58 +37,27 @@ var sendUrlResponse = function(url, response){
   file.pipe(response);
 }
 
-var initializeMessages = function() {
-  var messages;
-  var filePath = path.join(__dirname + "/client/messages.json");
+var sendResponse = function(statusCode, content) {
+  var headers = defaultCorsHeaders;
+  headers['Content-Type'] = "text/plain";
+  response.writeHead(statusCode, headers);
+  response.end(content);
+};
 
-  fs.readFile(filePath, {encoding: 'utf-8'}, function(error, data) {
-    if(error) {
-      console.log('ERROR READING FILE');
-      msg = [];
-    } else {
-      msg = JSON.parse(data);
-    }
-  });
+var buildHeader = function(statusCode) {
 
 };
 
-var writeMessage = function(msg) {
-  var file = __dirname + "/client/messages.json";
-
-  var msgStrJson = JSON.stringify(msg);
-
-  fs.appendFile(file, msg, function(err, data) {
-    if(err) {
-      console.log("Error: " + error);
-    } else {
-      console.log("File saved");
-    }
-
-  });
-};
-
-var msg;
-initializeMessages();
-
+var msg = [];
 var handleRequest = function(request, response) {
   /* the 'request' argument comes from nodes http module. It includes info about the
   request - such as what URL the browser is requesting. */
-  console.log('Messages in handleRequest function');
-  // msg = msg || [];
-  console.log(msg);
-
-   var sendResponse = function(statusCode, content) {
-      var headers = defaultCorsHeaders;
-      headers['Content-Type'] = "text/plain";
-      response.writeHead(statusCode, headers);
-      response.end(content);
-   };
    var coreUrl = url.parse(request.url);
-   var urlPath = coreUrl.pathname;
+   var path = coreUrl.pathname;
 
   /* Documentation for both request and response can be found at
    * http://nodemanual.org/0.8.14/nodejs_ref_guide/http.html */
-  if (urlPath === '/1/classes/chatterbox'){
+  if (path === '/1/classes/chatterbox'){
     if(request.method === 'POST'){
 
       var body = '';
@@ -99,9 +67,7 @@ var handleRequest = function(request, response) {
 
       request.on('end', function () {
         var POST = JSON.parse(body);
-        console.log('msg',msg);
         msg.push(POST);
-        writeMessage(msg);
       });
       sendResponse(200, "Hello world!");
     } 
@@ -112,7 +78,7 @@ var handleRequest = function(request, response) {
       sendResponse(200, "Hello world!");
     }
 
-  } else if (urlPath === '/'){
+  } else if (path === '/'){
       if (request.method === 'GET') {
         response.writeHead(200, {
           'Content-Type': 'text/html'
@@ -121,8 +87,8 @@ var handleRequest = function(request, response) {
         file.pipe(response);
       }
 
-  } else if (contentT[urlPath]) {
-      sendUrlResponse(urlPath, response);
+  } else if (contentT[path]) {
+      sendUrlResponse(path, response);
   } else {
     sendResponse(404, "Resource not found");
   }
