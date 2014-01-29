@@ -11,19 +11,21 @@ var url = require( "url" );
 var fs = require("fs");
 
 var contentT = {
-  "/client/scripts/app.js": "text/javascript",
-  "/client/scripts/config.js": "text/javascript",
-  "/client/bower_components/handlebars/handlerbars.min.js": "text/javascript",
-  "/client/bower_components/underscore/underscore.min.js": "text/javascript",
-  "/client/bower_components/jquery/jquery.min.js": "text/javascript",
-  "/client/style/style.css": "text/css"
+  "/scripts/app.js": "text/javascript",
+  "/scripts/config.js": "text/javascript",
+  "/bower_components/handlebars/handlebars.min.js": "text/javascript",
+  "/bower_components/underscore/underscore-min.js": "text/javascript",
+  "/bower_components/underscore/underscore-min.map": "text/javascript",
+  "/bower_components/jquery/jquery.min.js": "text/javascript",
+  "/bower_components/jquery/jquery.min.map": "text/javascript",
+  "/styles/styles.css": "text/css"
 };
 
-var sendUrlResponse = function(url){
+var sendUrlResponse = function(url, response){
   response.writeHead(200, {
-    'Content-Type': contentT[url];
+    'Content-Type': contentT[url]
   });
-  var file = fs.createReadStream(__dirname + url);
+  var file = fs.createReadStream(__dirname + "/client" + url);
   file.pipe(response);
 }
 
@@ -38,10 +40,12 @@ var handleRequest = function(request, response) {
       response.writeHead(statusCode, headers);
       response.end(content);
    };
+   var coreUrl = url.parse(request.url);
+   var path = coreUrl.pathname;
 
   /* Documentation for both request and response can be found at
    * http://nodemanual.org/0.8.14/nodejs_ref_guide/http.html */
-   if (request.url === '/1/classes/chatterbox'){
+  if (path === '/1/classes/chatterbox'){
     if(request.method === 'POST'){
 
       var body = '';
@@ -53,18 +57,16 @@ var handleRequest = function(request, response) {
         var POST = JSON.parse(body);
         msg.push(POST);
       });
-
       sendResponse(200, "Hello world!");
     } 
     else if (request.method === 'GET') {
       var msgJson = JSON.stringify(msg);
-      // console.log('msgJson');
-      // console.log(msgJson);
       sendResponse(200, msgJson);
     } else {
       sendResponse(200, "Hello world!");
     }
-   } else if (request.url === '/'){
+
+  } else if (path === '/'){
       if (request.method === 'GET') {
         response.writeHead(200, {
           'Content-Type': 'text/html'
@@ -72,23 +74,14 @@ var handleRequest = function(request, response) {
         var file = fs.createReadStream(__dirname + "/client/index.html");
         file.pipe(response);
       }
-   } else if (request.url === '/scripts/app.js') {
 
-      sendUrlResponse(request.url)
-      if (request.method === 'GET') {
-        response.writeHead(200, {
-          'Content-Type': 'text/javascript'
-        });
-        var file = fs.createReadStream(__dirname + "/client/scripts/app.js");
-        file.pipe(response);
-      }    
-   } else {
-     sendResponse(200, "Hello world!");
-   }
-
-  console.log("Serving request type " + request.method + " for url " + request.url);
-
-
+  } else if (contentT[path]) {
+      sendUrlResponse(path, response);
+  } else {
+    sendResponse(404, "Resource not found");
+  }
+  
+  console.log("Serving request type " + request.method + " for url " + path);
 
 };
 
