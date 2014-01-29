@@ -4,10 +4,29 @@
  * You'll have to figure out a way to export this function from
  * this file and include it in basic-server.js so that it actually works.
  * *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html. */
-var queryString = require( "querystring" );
+// var queryString = require( "querystring" );
 
 //need to check the url and install it
 var url = require( "url" );
+var fs = require("fs");
+
+var contentT = {
+  "/client/scripts/app.js": "text/javascript",
+  "/client/scripts/config.js": "text/javascript",
+  "/client/bower_components/handlebars/handlerbars.min.js": "text/javascript",
+  "/client/bower_components/underscore/underscore.min.js": "text/javascript",
+  "/client/bower_components/jquery/jquery.min.js": "text/javascript",
+  "/client/style/style.css": "text/css"
+};
+
+var sendUrlResponse = function(url){
+  response.writeHead(200, {
+    'Content-Type': contentT[url];
+  });
+  var file = fs.createReadStream(__dirname + url);
+  file.pipe(response);
+}
+
 
 var msg = [];
 var handleRequest = function(request, response) {
@@ -45,6 +64,26 @@ var handleRequest = function(request, response) {
     } else {
       sendResponse(200, "Hello world!");
     }
+   } else if (request.url === '/'){
+      if (request.method === 'GET') {
+        response.writeHead(200, {
+          'Content-Type': 'text/html'
+        });
+        var file = fs.createReadStream(__dirname + "/client/index.html");
+        file.pipe(response);
+      }
+   } else if (request.url === '/scripts/app.js') {
+
+      sendUrlResponse(request.url)
+      if (request.method === 'GET') {
+        response.writeHead(200, {
+          'Content-Type': 'text/javascript'
+        });
+        var file = fs.createReadStream(__dirname + "/client/scripts/app.js");
+        file.pipe(response);
+      }    
+   } else {
+     sendResponse(200, "Hello world!");
    }
 
   console.log("Serving request type " + request.method + " for url " + request.url);
